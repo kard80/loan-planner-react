@@ -10,7 +10,7 @@ export default function Detail() {
     const [resPayload] = useState(MaxLoanAmountRes);
 
     return (
-        <div className='container'>
+        <div className='detail-container'>
             <div className='left-panel'>
                 <div className='child-panel'>
                     <h1>ข้อมูลส่วนตัว</h1>

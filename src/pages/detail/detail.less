@@ -1,69 +1,72 @@
 @import '../../themes/dark.less';
 
-h1 {
-    text-align: left;
-    width: 100%;
-}
 
-.container {
+.detail-container {
     display: flex;
     align-items: center;
     width: 60%;
     height: 90vh;
     margin: auto;
-}
 
-.left-panel, .right-panel {
-    width: 100%;
-    display: flex;
-    justify-content: flex-start;
-    align-items: flex-start;
-    height: 520px;
-}
-
-.left-panel {
-    .child-panel {
-        height: 75%;
-        width: 280px;
-        align-items: center;
-    }
-}
-
-.right-panel {
-    color: @dark-color;
-    background-color: @light-color;
-    .child-panel {
-        height: 350px;
-        width: 80%;
-        align-items: stretch;
-    }
-}
-
-.child-panel {
-    display: flex;
-    justify-content: flex-start;
-    flex-direction: column;
-    padding-left: 30px;
-    button {
+    h1 {
+        text-align: left;
         width: 100%;
-        margin-top: 40px;
     }
-}
 
-//left-panel side
-.input-block-container {
-    width: 100%;
-    .input-block {
-        display:flex;
+    .left-panel, .right-panel {
+        width: 100%;
+        display: flex;
+        justify-content: flex-start;
+        align-items: flex-start;
+        height: 520px;
+    }
+    
+    .left-panel {
+        .child-panel {
+            height: 75%;
+            width: 280px;
+            align-items: flex-start;
+        }
+    }
+    
+    .right-panel {
+        color: @dark-color;
+        background-color: @light-color;
+        .child-panel {
+            height: 350px;
+            width: 80%;
+            align-items: stretch;
+        }
+    }
+    
+    .child-panel {
+        display: flex;
+        justify-content: flex-start;
         flex-direction: column;
-        padding: 6px 0;
-        width: 100%;
-        line-height: 27px;
+        padding-left: 30px;
+        button {
+            width: 80%;
+            max-width: 280px;
+            margin-top: 40px;
+        }
     }
-}
-
-//right-panel side
-.result-block {
-    display: flex;
-    justify-content: space-between;
+    
+    //left-panel side
+    .input-block-container {
+        width: 100%;
+        .input-block {
+            display:flex;
+            flex-direction: column;
+            padding: 6px 0;
+            width: 80%;
+            max-width: 280px;
+            line-height: 27px;
+        }
+    }
+    
+    //right-panel side
+    .result-block {
+        display: flex;
+        justify-content: space-between;
+    }
 }
