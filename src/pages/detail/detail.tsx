@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { MockNumberResult } from '../../mocks/home';
 
 import { FindService } from '../../mocks/home';
+import { FetchData } from '../../services/http';
 import { ServicePayload, ServiceRequest } from '../../types/serviceRequest';
 
 import './detail.less';
@@ -10,6 +10,7 @@ import './detail.less';
 export default function Detail() {
     let { id } = useParams();
     const [payload, setPayload] = useState<ServicePayload[]>([]);
+    const [couldSend, setCouldSend] = useState<boolean>(false);
     const [data, setData] = useState<ServiceRequest>({id: '', label: '', input: [], output: []});
     const [showResult, setShowResult] = useState<boolean>(false);
 
@@ -21,11 +22,24 @@ export default function Detail() {
     }, [id])
 
     const onClickCaculate = () => {
+        let query = '';
+        payload.forEach(item => {
+            if (query !== '') {
+                query += ',';
+            }
+            query += `${item.key}=${item.value}`
+        })
+
         //TODO: http POST data
-        const result = MockNumberResult(payload);
-        const changedData: ServiceRequest = {...data, output: result };
-        setData(changedData);
-        setShowResult(true);
+        FetchData('/maxLoanAmount?'+ query)
+            .then(res => {
+                const changedData: ServiceRequest = {...data, output: res };
+                setData(changedData);
+                setShowResult(true);
+            })
+            .catch(err => {
+                console.error(err);
+            })
     }
 
     const onInputValueChange = (e: React.ChangeEvent<HTMLInputElement>, servicePayload: ServicePayload) => {
@@ -42,6 +56,7 @@ export default function Detail() {
             checked.push({ ...servicePayload, value: e.target.value })
         }
         setPayload(checked)
+        setCouldSend(!!e.target.value)
     }
 
     return (
@@ -55,12 +70,12 @@ export default function Detail() {
                             return (
                                 <div className='input-block' key={item.key}>
                                     <label>{item.label}</label>
-                                    <input type={inputType} step='1000'  onChange={e => onInputValueChange(e, item)} />
+                                    <input required type={inputType} step='1000'  onChange={e => onInputValueChange(e, item)} />
                                 </div>
                             )
                         })}
                     </div>
-                    <button onClick={onClickCaculate}>คำนวณ</button>
+                    <button onClick={onClickCaculate} disabled={!couldSend}>คำนวณ</button>
                 </div>
             </div>
             <div className='right-panel'>
