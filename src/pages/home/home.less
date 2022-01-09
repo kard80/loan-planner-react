@@ -5,21 +5,28 @@
     width: 80%;
     margin: 30px auto 0 auto;
     
-    //grid property
-    display: grid;
-    grid-template-columns: auto auto;
-    row-gap: 30px;;
+    //flex property
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 20px;
+
+    a {
+        text-decoration-line: none;
+    }
 
     .card {
         background-color: @light-color;
         color: @dark-color;
         height: 40px;
-        min-width: 200px;
-        max-width: 350px;
+        min-width: 300px;
+        max-width: 400px;
         width: 80%;
         min-height: 65px;
         margin: auto;
         cursor: pointer;
+        border-radius: @block-radius;
 
         //flex property
         display: flex;

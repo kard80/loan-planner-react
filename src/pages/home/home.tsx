@@ -1,16 +1,19 @@
-import { Topic } from '../../mocks/home';
+import { Link } from 'react-router-dom';
+import { Services } from '../../mocks/home';
 import { useState } from 'react';
 
 import './home.less';
 
 export default function Home() {
-    const [data] = useState(Topic);
+    const [data] = useState(Services);
     return (
         <div className='home-container'>
-            {data.map((item, index) => {
-                const className = `card ${index % 2 === 0 ? 'left-card' : 'right-card'}`
+            {data.map((item) => {
+                const input = `/detail/${item.id}`;
                 return (
-                    <div className={className}>{item.name}</div>
+                    <Link to={input} key={item.id}>
+                        <div className='card'>{item.label}</div>
+                    </Link>
                 )
             })}
         </div>
