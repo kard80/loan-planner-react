@@ -23,18 +23,6 @@ export default function Detail() {
                                 </div>
                             )
                         })}
-                        {/* <div className='input-block'>
-                            <label>วงเงินที่ต้องการกู้</label>
-                            <input />
-                        </div> */}
-                        {/* <div className='input-block'>
-                            <label>ระยะเวลาที่ต้องการกู้</label>
-                            <input />
-                        </div>
-                        <div className='input-block'>
-                            <label>อัตราดอกเบี้ย</label>
-                            <input />
-                        </div> */}
                     </div>
                     <button>คำนวณ</button>
                 </div>
@@ -51,18 +39,6 @@ export default function Detail() {
                                 </div>
                             )
                         })}
-                        {/* <div className='result-block'>
-                            <h3>ยอดผ่อนชำระต่อเดือน</h3>
-                            <p>20,000.00</p>
-                        </div> */}
-                        {/* <div className='result-block'>
-                            <h3>วงเงินกู้สูงสุด</h3>
-                            <p>1,000,000.00</p>
-                        </div>
-                        <div className='result-block'>
-                            <h3>รายได้ขั้นต่ำ</h3>
-                            <p>50,000.00</p>
-                        </div> */}
                     </div>
                     <div></div>
                 </div>

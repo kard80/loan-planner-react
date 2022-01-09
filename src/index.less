@@ -2,6 +2,7 @@
 
 //variables
 @font-family: Sarabun;
+@block-radius: 5px;
 
 body {
     background-color: @dark-color;
@@ -13,13 +14,13 @@ body {
 button {
     background-color: @light-color;
     border: none;
-    border-radius: 5px;
+    border-radius: @block-radius;
     color: @dark-color;
     height: 33px;
 }
 
 input {
-    border-radius: 5px;
+    border-radius: @block-radius;
     border: none;
     height: 24px;
 }

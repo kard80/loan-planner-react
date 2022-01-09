@@ -1,0 +1,36 @@
+@import '../../themes/dark.less';
+@import '../../index.less';
+
+.home-container {
+    width: 80%;
+    margin: 30px auto 0 auto;
+    
+    //grid property
+    display: grid;
+    grid-template-columns: auto auto;
+    row-gap: 30px;;
+
+    .card {
+        background-color: @light-color;
+        color: @dark-color;
+        height: 40px;
+        min-width: 200px;
+        max-width: 350px;
+        width: 80%;
+        min-height: 65px;
+        margin: auto;
+        cursor: pointer;
+
+        //flex property
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .left-card {
+        border-radius: 0 @block-radius @block-radius 0;
+    }
+    .right-card {
+        border-radius: @block-radius 0 0 @block-radius;
+    }
+}
