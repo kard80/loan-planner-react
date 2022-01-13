@@ -1,24 +1,31 @@
-@import '../../themes/dark.less';
+@import '../../themes/light.less';
 
 
 .detail-container {
-    display: flex;
-    align-items: center;
-    width: 70%;
+    width: 100%;
     height: 90vh;
     margin: auto;
-
-    h1 {
-        text-align: left;
-        width: 100%;
+    
+    //flex properties
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    
+    h2 {
+        margin-bottom: 20px;
     }
 
     .left-panel, .right-panel {
-        width: 100%;
+        width: 40%;
         display: flex;
         justify-content: flex-start;
         align-items: flex-start;
         height: 520px;
+        margin: 10px;
+        background-color: @secondary-background-color;
+        min-width: 300px;
+        padding-top: 20px;
     }
     
     .left-panel {
@@ -30,8 +37,6 @@
     }
     
     .right-panel {
-        color: @dark-color;
-        background-color: @light-color;
         .child-panel {
             height: 350px;
             width: 80%;

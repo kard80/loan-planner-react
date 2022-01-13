@@ -1,42 +1,18 @@
-@import "./themes/dark.less";
+@import './themes/light.less';
+@import './themes/colors.less';
 
 //variables
 @font-family: Sarabun;
 @block-radius: 5px;
 
-// .popup-overlay {
-//     background: rgba(0, 0, 0, 0.5);
-// }
 
-// body {
-//     background-color: @dark-color;
-//     color: @light-color;
-//     font-family: @font-family;
-//     font-weight: normal;
-// }
+body {
+    background-color: @primary-background-color;
+}
 
-// button {
-//     background-color: @light-color;
-//     border: none;
-//     border-radius: @block-radius;
-//     color: @dark-color;
-//     height: 33px;
-//     cursor: pointer;
-// }
-
-// button:disabled {
-//     cursor: not-allowed;
-// }
-
-// input {
-//     border-radius: @block-radius;
-//     border: none;
-//     height: 24px;
-// }
-
-// .bold {
-//     font-weight: bold;
-// }
+a {
+    color: @white;
+}
 
 //font-face
 @font-face {

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { Button, Card, Heading, Pane, Text, TextInput } from 'evergreen-ui';
 
 import { FindService } from '../../mocks/home';
 import { FetchData } from '../../services/http';
@@ -30,7 +31,6 @@ export default function Detail() {
             query += `${item.key}=${item.value}`
         })
 
-        //TODO: http POST data
         FetchData('/maxLoanAmount?'+ query)
             .then(res => {
                 const changedData: ServiceRequest = {...data, output: res };
@@ -60,39 +60,39 @@ export default function Detail() {
     }
 
     return (
-        <div className='detail-container'>
-            <div className='left-panel'>
-                <div className='child-panel'>
-                    <h1>ข้อมูลส่วนตัว</h1>
-                    <div className='input-block-container'>
+        <Pane className='detail-container'>
+            <Card className='left-panel'>
+                <Pane className='child-panel'>
+                    <Heading>ข้อมูลส่วนตัว</Heading>
+                    <Pane className='input-block-container'>
                         {data?.input.map(item => {
                             const inputType = item.type === 'number' ? 'number' : 'text';
                             return (
-                                <div className='input-block' key={item.key}>
-                                    <label>{item.label}</label>
-                                    <input required type={inputType} step='1000'  onChange={e => onInputValueChange(e, item)} />
-                                </div>
+                                <Pane className='input-block' key={item.key}>
+                                    <Text>{item.label}</Text>
+                                    <TextInput required type={inputType} step='1000' min='0' width={'100%'}  onChange={(e: any) => onInputValueChange(e, item)} />
+                                </Pane>
                             )
                         })}
-                    </div>
-                    <button onClick={onClickCaculate} disabled={!couldSend}>คำนวณ</button>
-                </div>
-            </div>
-            <div className='right-panel'>
-            <div className='child-panel'>
-                    <h1>ผลการคำนวณเงินกู้</h1>
-                    <div className='result-block-container'>
+                    </Pane>
+                    <Button appearance='primary' onClick={onClickCaculate} disabled={!couldSend}>คำนวณ</Button>
+                </Pane>
+            </Card>
+            <Card className='right-panel'>
+                <Pane className='child-panel'>
+                    <Heading>ผลการคำนวณเงินกู้</Heading>
+                    <Pane className='result-block-container'>
                         {showResult && data?.output.map(item => {
                             return (
-                                <div className='result-block' key={item.key}>
-                                    <p className='bold'>{item.label}</p>
-                                    <p>{item.value}</p>
-                                </div>
+                                <Pane className='result-block' key={item.key}>
+                                    <Text className='bold'>{item.label}</Text>
+                                    <Text>{item.value}</Text>
+                                </Pane>
                             )
                         })}
-                    </div>
-                </div>
-            </div>
-        </div>
+                    </Pane>
+                </Pane>
+            </Card>
+        </Pane>
     )
 } 
