@@ -5,7 +5,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Home from './pages/home/home';
 import Detail from './pages/detail/detail';
-import Login from './pages/login';
 import Navbar from './components/navbar/navbar';
 
 import './index.less';
@@ -17,7 +16,6 @@ ReactDOM.render(
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/detail/:id" element={<Detail />} />
-      <Route path="/login" element={<Login />} />
     </Routes>
     </BrowserRouter>
   </div>,
