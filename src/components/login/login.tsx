@@ -3,7 +3,12 @@ import { Dialog, Pane, Text, TextInput } from 'evergreen-ui';
 
 import './login.less';
 
-export default function Login({isShown, setIsShown} : {isShown: boolean, setIsShown: Dispatch<SetStateAction<boolean>>}) {
+type property = {
+    isShown: boolean,
+    setIsShown: Dispatch<SetStateAction<boolean>>
+}
+
+export default function Login({isShown, setIsShown}: property) {
     return (
         <Dialog
         isShown={isShown}

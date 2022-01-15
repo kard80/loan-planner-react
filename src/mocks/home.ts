@@ -21,29 +21,30 @@ export const Services: ServiceRequest[] = [
                 value: 0
             }
         ],
+        options: []
     },
-    // {
-    //     id: 'pay-monthly',
-    //     label: 'ผ่อนเดือนละ',
-    //     input: [
-    //         {
-    //             label: 'เงินเดือน',
-    //             key: 'salary',
-    //             type: 'number',
-    //             value: 0
+    {
+        id: 'planner',
+        label: 'คำนวณแผนการกู้',
+        input: [
+            {
+                label: 'เงินเดือน',
+                key: 'salary',
+                type: 'number',
+                value: 0
 
-    //         }
-    //     ],
-    //     output: [
-    //         {
-    //             label: 'เงินกู้สูงสุด',
-    //             key: 'loanAmount',
-    //             type: 'number',
-    //             value: 0
-    //         }
-    //     ],
-    //     options: ['disable']
-    // }
+            }
+        ],
+        output: [
+            {
+                label: 'เงินกู้สูงสุด',
+                key: 'loanAmount',
+                type: 'number',
+                value: 0
+            }
+        ],
+        options: ['planner']
+    }
 ]
 
 export function FindService(id: string): ServiceRequest {
@@ -51,7 +52,8 @@ export function FindService(id: string): ServiceRequest {
         id: '',
         label: '',
         input: [],
-        output: []
+        output: [],
+        options: []
     };
     
     Services.forEach(item => {

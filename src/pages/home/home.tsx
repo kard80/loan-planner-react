@@ -10,7 +10,10 @@ export default function Home() {
     return (
         <Pane className='home-container'>
             {data.map((item) => {
-                const input = `/detail/${item.id}`;
+                let input = `/detail/${item.id}`;
+                if (item.options.includes('planner')) {
+                    input = '/planner';
+                }
                 return (
                     <Link to={input} key={item.id}>
                         <Button className='card'>{item.label}</Button>

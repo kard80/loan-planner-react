@@ -3,7 +3,7 @@ export type ServiceRequest = {
     label: string,
     input: ServicePayload[],
     output: ServicePayload[],
-    options?: string[]
+    options: string[]
 }
 
 export type ServicePayload = {

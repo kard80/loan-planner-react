@@ -5,7 +5,7 @@ import { Button, Heading } from 'evergreen-ui';
 
 import './navbar.less';
 
-export default function Navbar(params: any) {
+export default function Navbar() {
     const [isShown, setIsShown] = useState(false);
     return(
         <nav className={'navbar-container'}>

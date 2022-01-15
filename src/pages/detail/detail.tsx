@@ -12,7 +12,7 @@ export default function Detail() {
     let { id } = useParams();
     const [payload, setPayload] = useState<ServicePayload[]>([]);
     const [couldSend, setCouldSend] = useState<boolean>(false);
-    const [data, setData] = useState<ServiceRequest>({id: '', label: '', input: [], output: []});
+    const [data, setData] = useState<ServiceRequest>({id: '', label: '', input: [], output: [], options: []});
     const [showResult, setShowResult] = useState<boolean>(false);
 
     useEffect(() => {
