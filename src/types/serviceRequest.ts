@@ -12,3 +12,23 @@ export type ServicePayload = {
     type: string,
     value: any
 }
+
+export type PlannerRequest = {
+    loanAmount: string,
+    interestRate: string,
+    installment: string
+}
+
+export type PlannerResponse = {
+    months: MonthDetail[],
+}
+
+export type MonthDetail = {
+    no: string,
+    carryLoanAmount: string,
+    interestRate: string,
+    interestAmount: string,
+    installment: string,
+    principleDistract: string,
+    remainingLoanAmount: string
+}
