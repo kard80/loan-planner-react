@@ -7,8 +7,14 @@ import { FetchData } from '../../services/http';
 import { ServicePayload, ServiceRequest } from '../../types/serviceRequest';
 
 import './detail.less';
+import { connect, RootStateOrAny } from 'react-redux';
+import { spinnerAction } from '../../redux/action';
 
-export default function Detail() {
+type props = {
+    dispatch: Function
+}
+
+function Detail({ dispatch }: props) {
     let { id } = useParams();
     const [payload, setPayload] = useState<ServicePayload[]>([]);
     const [couldSend, setCouldSend] = useState<boolean>(false);
@@ -22,7 +28,7 @@ export default function Detail() {
         }
     }, [id])
 
-    const onClickCaculate = () => {
+    const onClickCaculate = async () => {
         let query = '';
         payload.forEach(item => {
             if (query !== '') {
@@ -31,15 +37,21 @@ export default function Detail() {
             query += `${item.key}=${item.value}`
         })
 
-        FetchData('/maxLoanAmount?'+ query)
-            .then(res => {
-                const changedData: ServiceRequest = {...data, output: res };
-                setData(changedData);
-                setShowResult(true);
-            })
-            .catch(err => {
-                console.error(err);
-            })
+        try {
+            showSpinner(true);
+            const res = await FetchData('/maxLoanAmount?' + query);
+            const changedData: ServiceRequest = {...data, output: res };
+            setData(changedData);
+            setShowResult(true);
+        } catch (err) {
+            console.log(err);
+        } finally {
+            showSpinner(false);
+        }
+    }
+
+    const showSpinner = (show: boolean) => {
+        dispatch(spinnerAction(show));
     }
 
     const onInputValueChange = (e: React.ChangeEvent<HTMLInputElement>, servicePayload: ServicePayload) => {
@@ -95,4 +107,12 @@ export default function Detail() {
             </Card>
         </Pane>
     )
-} 
+}
+
+const mapStateToProps = (state: RootStateOrAny) => {
+    return {
+        showSpinner: state.showSpinner
+    }
+}
+
+export default connect(mapStateToProps)(Detail);

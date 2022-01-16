@@ -5,16 +5,32 @@ import { PlannerRequest, PlannerResponse, MonthDetail } from "../../types/servic
 import { CSVLink } from "react-csv";
 
 import './planner.less';
+import { connect, RootStateOrAny } from "react-redux";
+import { spinnerAction } from "../../redux/action";
 
-export default function Planner() {
+type props = {
+    dispatch: Function
+}
+
+function Planner({ dispatch }: props) {
     const [input, setInput] = useState<PlannerRequest>({loanAmount: '', interestRate: '', installment: ''});
     const [output, setOutput] = useState<PlannerResponse>({ months: [] as MonthDetail[] });
     const [tabIndex, setTabIndex] = useState(0);
 
     const handleOnSubmit = async () => {
-        const fetch = await FetchData(`/plannerCalculation?loanAmount=${input.loanAmount}&interestRate=${input.interestRate}&installment=${input.installment}`);
-        setOutput({ months: fetch.months as MonthDetail[] });
+        showSpinner(true);
+        try {
+            const fetch = await FetchData(`/plannerCalculation?loanAmount=${input.loanAmount}&interestRate=${input.interestRate}&installment=${input.installment}`);
+            setOutput({ months: fetch.months as MonthDetail[] });
+        } finally {
+            showSpinner(false);
+        }
     }
+
+    const showSpinner = (show: boolean) => {
+        dispatch(spinnerAction(show));
+    }
+
     return(
         <Pane className="planner-container" display='flex' flexDirection='column' alignItems='center'>
             <Pane className='input-part'>
@@ -72,3 +88,11 @@ export default function Planner() {
         </Pane>
     )
 }
+
+const mapStateToProps = (state: RootStateOrAny) => {
+    return {
+        showSpinner: state.showSpinner
+    }
+}
+
+export default connect(mapStateToProps)(Planner);
