@@ -2,23 +2,24 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Login from '../login/login';
 import { Button, Heading } from 'evergreen-ui';
-import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
+import { getAuth, signOut } from 'firebase/auth';
 import { Alert } from '../../lang/thai';
 import { toasterCustom } from '../toaster/toaster';
-import { connect, RootStateOrAny } from 'react-redux';
+import { useAuthState } from 'react-firebase-hooks/auth';
 
+import { auth } from '../../services/firebase';
 import './navbar.less';
 
-type props = {
-    dispatch: Function
-}
-
-
-function Navbar({ dispatch }: props) {
+export default function Navbar() {
     const navigate = useNavigate();
     const [isShown, setIsShown] = useState(false);
-    const [loginStatus, setLoginStatus] = useState(false);
-    const [disableLoginBtn, setDisableLoginBtn] = useState(true);
+    const [user] = useAuthState(auth);
+
+    useEffect(() => {
+        if (!!user) {
+            setIsShown(false);
+        }
+    }, [user])
 
     const onLogout = async () => {
         const auth = getAuth();
@@ -31,40 +32,15 @@ function Navbar({ dispatch }: props) {
         }
     }
 
-    // Example how to use redux action
-    // const showSpinner = () => {
-    //     dispatch({ type: SHOW_SPINNER });
-    // }
-
-    useEffect(() => {
-        if (!loginStatus) {
-            setTimeout(() => {
-                setDisableLoginBtn(false);
-            }, 1000);
-        }
-        const auth = getAuth();
-        onAuthStateChanged(auth, user => {
-            setLoginStatus(!!user);
-        })
-    })
-
     return(
         <nav className={'navbar-container'}>
             <Link to='/'>
                 <Heading className='navbar-header' onClick={() => {<Link to='/' />}}>Loan Planner</Heading>
             </Link>
-            {loginStatus
+            {!!user
                 ? <Button onClick={onLogout}>Logout</Button>
-                : <Button disabled={disableLoginBtn} onClick={() => setIsShown(true)}>Login</Button>}
+                : <Button onClick={() => setIsShown(true)}>Login</Button>}
             <Login isShown={isShown} setIsShown={setIsShown} />
         </nav>
     )
 }
-
-const mapStateToProps = (state: RootStateOrAny) => {
-    return {
-        showSpinner: state.showSpinner
-    }
-}
-
-export default connect(mapStateToProps)(Navbar);

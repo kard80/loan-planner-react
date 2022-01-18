@@ -1,30 +1,56 @@
-import { Button, Pane, Tab, Table, Tablist, TextInputField } from "evergreen-ui";
-import { useState, ChangeEvent } from "react";
-import { FetchData } from "../../services/http";
-import { PlannerRequest, PlannerResponse, MonthDetail } from "../../types/serviceRequest";
-import { CSVLink } from "react-csv";
+import { Button, Pane, Tab, Table, Tablist, Text, TextInputField, Tooltip } from 'evergreen-ui';
+import { useState, ChangeEvent, useEffect } from 'react';
+import { FetchData } from '../../services/http';
+import { PlannerRequest, PlannerResponse, MonthDetail } from '../../types/serviceRequest';
+import { CSVLink } from 'react-csv';
+import { useAuthState } from 'react-firebase-hooks/auth';
 
 import './planner.less';
-import { connect, RootStateOrAny } from "react-redux";
-import { spinnerAction } from "../../redux/action";
+import { connect, RootStateOrAny } from 'react-redux';
+import { spinnerAction } from '../../redux/action';
+import { inputPlannerList } from '../../mocks/planner';
+import { auth } from '../../services/firebase';
 
 type props = {
     dispatch: Function
 }
 
+const defaultProfileList: PlannerRequest[] = [{loanAmount: '', interestRate: '', installment: '', label: 'Pane 1'}];
+
 function Planner({ dispatch }: props) {
-    const [input, setInput] = useState<PlannerRequest>({loanAmount: '', interestRate: '', installment: ''});
+    const [profileList, setProfileList] = useState<PlannerRequest[]>(defaultProfileList);
     const [output, setOutput] = useState<PlannerResponse>({ months: [] as MonthDetail[] });
-    const [tabIndex, setTabIndex] = useState(0);
+    const [selectedTab, setSelectedTab] = useState(0);
+    const [selectedDisplay, setSelectedDisplay] = useState(0);
+    const [user] = useAuthState(auth);
+    
+
+    useEffect(() => {
+        if (user) {
+            fetchInputList();
+        } else {
+            setSelectedTab(0);
+            setProfileList(defaultProfileList);
+        }
+    }, [user])
+
+    const fetchInputList = () => {
+        // TODO: fetch data from db
+        setProfileList(inputPlannerList);
+    }
 
     const handleOnSubmit = async () => {
         showSpinner(true);
         try {
-            const fetch = await FetchData(`/plannerCalculation?loanAmount=${input.loanAmount}&interestRate=${input.interestRate}&installment=${input.installment}`);
+            const fetch = await FetchData(`/plannerCalculation?loanAmount=${profileList[selectedTab].loanAmount}&interestRate=${profileList[selectedTab].interestRate}&installment=${profileList[selectedTab].installment}`);
             setOutput({ months: fetch.months as MonthDetail[] });
         } finally {
             showSpinner(false);
         }
+    }
+
+    const onTabSelected = (index: number) => {
+        setSelectedTab(index);
     }
 
     const showSpinner = (show: boolean) => {
@@ -32,13 +58,20 @@ function Planner({ dispatch }: props) {
     }
 
     return(
-        <Pane className="planner-container" display='flex' flexDirection='column' alignItems='center'>
+        <Pane className='planner-container' display='flex' flexDirection='column' alignItems='center'>
             <Pane className='input-part'>
-                <Pane className="planner-part">
-                    <TextInputField label='วงเงินกู้' type='number' step={100000} min='0' required value={input.loanAmount} onChange={(e: ChangeEvent<HTMLInputElement>) => setInput({...input, loanAmount: e.target.value})} />
+                <Tablist marginBottom='10px'>
+                    {!!user && profileList.map((profile, index) => {
+                        return(
+                            <Tab key={index} isSelected={index === selectedTab} onSelect={() => onTabSelected(index)}>{profile.label}</Tab>
+                        )
+                    })}
+                </Tablist>
+                <Pane className='planner-part'>
+                    <TextInputField label='วงเงินกู้' type='number' step={100000} min='0' required value={profileList[selectedTab].loanAmount} onChange={(e: ChangeEvent<HTMLInputElement>) => setProfileList([{...profileList[selectedTab], loanAmount: e.target.value}])} />
                     {/* <TextInputField label='ระยะเวลาผ่อนชำระ(ปี)' type='number' min='1' required /> */}
-                    <TextInputField label='อัตราดอกเบี้ยสามปีแรก' type='number' min='0' required value={input.interestRate} onChange={(e: ChangeEvent<HTMLInputElement>) => setInput({...input, interestRate: e.target.value})} />
-                    <TextInputField label='ผ่อนชำระงวดละ(บาท)' type='number' min='0' step={1000} required value={input.installment} onChange={(e: ChangeEvent<HTMLInputElement>) => setInput({...input, installment: e.target.value})} />
+                    <TextInputField label='อัตราดอกเบี้ยสามปีแรก' type='number' min='0' required value={profileList[selectedTab].interestRate} onChange={(e: ChangeEvent<HTMLInputElement>) => setProfileList([{...profileList[selectedTab], interestRate: e.target.value}])} />
+                    <TextInputField label='ผ่อนชำระงวดละ(บาท)' type='number' min='0' step={1000} required value={profileList[selectedTab].installment} onChange={(e: ChangeEvent<HTMLInputElement>) => setProfileList([{...profileList[selectedTab], installment: e.target.value}])} />
                     {/* <TextInputField label='วันที่ชำระงวดแรก' type='date' /> */}
                     {/* <TextInputField label='อัตราดอกเบี้ยสามปีหลัง' type='number' min='0' /> */}
                 </Pane>
@@ -46,17 +79,17 @@ function Planner({ dispatch }: props) {
                     <Button appearance='primary' maxHeight='40px' onClick={handleOnSubmit} >คำนวณ</Button>
                 </Pane>
             </Pane>
-            <Pane className="output-part" display={output.months.length ? 'block' : 'none'}>
+            <Pane className='output-part' display={output.months.length ? 'block' : 'none'}>
                 <Pane marginBottom='20px' display='flex' flexDirection='row' justifyContent='space-between'>
                     <Tablist>
-                        <Tab onSelect={() => setTabIndex(0)} isSelected={tabIndex === 0}>ตาราง</Tab>
-                        <Tab onSelect={() => setTabIndex(1)} isSelected={tabIndex === 1}>กราฟ</Tab>
+                        <Tab key={1} onSelect={() => setSelectedDisplay(0)} isSelected={selectedDisplay === 0}>ตาราง</Tab>
+                        <Tab key={2} onSelect={() => setSelectedDisplay(1)} isSelected={selectedDisplay === 1} disabled={true}>กราฟ</Tab>
                     </Tablist>
                     <Button>
                         <CSVLink data={output.months}  className='csv-text'>Download CSV</CSVLink>
                     </Button>
                 </Pane>
-                <Pane display={tabIndex === 0 ? 'block': 'none'}>
+                <Pane display={selectedDisplay === 0 ? 'block': 'none'}>
                     <Table>
                         <Table.Head>
                             <Table.TextHeaderCell>งวดที่</Table.TextHeaderCell>

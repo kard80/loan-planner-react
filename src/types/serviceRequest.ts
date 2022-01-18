@@ -16,7 +16,8 @@ export type ServicePayload = {
 export type PlannerRequest = {
     loanAmount: string,
     interestRate: string,
-    installment: string
+    installment: string,
+    label: string
 }
 
 export type PlannerResponse = {
