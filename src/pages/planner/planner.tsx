@@ -1,5 +1,5 @@
-import { AddIcon, Button, DeleteIcon, Dialog, EditIcon, Pane, Tab, Table, Tablist, Text, TextInputField } from 'evergreen-ui';
-import { useState, ChangeEvent, useEffect } from 'react';
+import { AddIcon, Button, DeleteIcon, Dialog, EditIcon, Pane, Tab, Table, Tablist, Text, TextInput, TextInputField } from 'evergreen-ui';
+import { useState, ChangeEvent, useEffect, ChangeEventHandler } from 'react';
 import { FetchData } from '../../services/http';
 import { PlannerRequest, PlannerResponse, MonthDetail } from '../../types/serviceRequest';
 import { CSVLink } from 'react-csv';
@@ -10,6 +10,7 @@ import { connect, RootStateOrAny } from 'react-redux';
 import { spinnerAction } from '../../redux/action';
 import { inputPlannerList } from '../../mocks/planner';
 import { auth } from '../../services/firebase';
+import { toasterCustom } from '../../components/toaster/toaster';
 
 type props = {
     dispatch: Function
@@ -20,6 +21,8 @@ const profileLimit = 3;
 
 function Planner({ dispatch }: props) {
     const [isShowDialog, setIsShowDialog] = useState(false);
+    const [isEditMode, setIsEditMode] = useState(false);
+    const [newLabel, setNewLabel] = useState('');
     const [profileList, setProfileList] = useState<PlannerRequest[]>(defaultProfileList);
     const [output, setOutput] = useState<PlannerResponse>({ months: [] as MonthDetail[] });
     const [selectedTab, setSelectedTab] = useState(0);
@@ -47,15 +50,30 @@ function Planner({ dispatch }: props) {
 
     const onAddClicked = () => {
         const arr : PlannerRequest[] = [...profileList,  { ...defaultProfileList[0], label: `New Pane`}];
-        console.log(arr);
         setProfiles(arr, arr.length - 1);
-        console.log(profileList);
+    }
+
+    const onClickEditIcon = () => {
+        setIsEditMode(!isEditMode);
+    }
+
+    const onConfirmChangeLabel = (close: () => void) => {
+        const profiles = [...profileList];
+        profiles[selectedTab].label = newLabel;
+        setNewLabel('');
+        setProfileList(profiles);
+
+        // TODO: Fetch http
+        toasterCustom.success('Rename success');
+        close();
     }
 
     const onConfirmDeleteProfile = (close: () => void) => {
         const arr = [...profileList];
         arr.splice(selectedTab, 1);
         setProfiles(arr, 0);
+        // TODO: Fetch http
+        toasterCustom.success('Delete success');
         close();
     }
 
@@ -94,16 +112,26 @@ function Planner({ dispatch }: props) {
                     <Tablist marginBottom='10px'>
                         {!!user && profileList.map((profile, index) => {
                             return(
-                                <Tab key={index} isSelected={index === selectedTab} onSelect={() => onTabSelected(index)}>
+                                <Tab position='relative' key={index} isSelected={index === selectedTab} onSelect={() => onTabSelected(index)}>
                                     {profile.label}
                                 </Tab>
                             )
                         })}
                         { !!user && profileList.length < profileLimit && <Tab><AddIcon size={12} color='info' onClick={() => onAddClicked()}></AddIcon></Tab>}
                     </Tablist>
+                    <Dialog
+                        isShown={isEditMode}
+                        title='Rename'
+                        onConfirm={(close: () => void) => onConfirmChangeLabel(close)}
+                        onCloseComplete={() => setIsEditMode(false)}>
+                            <Text>คุณต้องการเปลี่ยนชื่อจาก</Text>
+                            <Text size={500} fontWeight='bold'> {profileList[selectedTab].label} </Text>
+                            <Text>เป็น</Text>
+                            <TextInput display='block' marginTop='10px' width='50%' value={newLabel} onChange={(e: ChangeEvent<HTMLInputElement>) => setNewLabel(e.target.value)} />
+                    </Dialog>
                     { !!user &&
                         <Pane minWidth='20px' display='flex' justifyContent='flex-end' gap='8px'>
-                            <EditIcon cursor='pointer' />
+                            <EditIcon cursor='pointer' onClick={onClickEditIcon} />
                             { profileList.length > 1 && <DeleteIcon color='danger' cursor='pointer' onClick={() => setIsShowDialog(true)} />}
                         </Pane>}
                     <Dialog
