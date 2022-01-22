@@ -1,5 +1,5 @@
 import { AddIcon, Button, DeleteIcon, Dialog, EditIcon, Pane, Tab, Table, Tablist, Text, TextInput, TextInputField } from 'evergreen-ui';
-import { useState, ChangeEvent, useEffect, ChangeEventHandler } from 'react';
+import { useState, ChangeEvent, useEffect } from 'react';
 import { FetchData } from '../../services/http';
 import { PlannerRequest, PlannerResponse, MonthDetail } from '../../types/serviceRequest';
 import { CSVLink } from 'react-csv';
@@ -8,9 +8,10 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import './planner.less';
 import { connect, RootStateOrAny } from 'react-redux';
 import { spinnerAction } from '../../redux/action';
-import { inputPlannerList } from '../../mocks/planner';
 import { auth } from '../../services/firebase';
+import { getFirestore, getDoc, doc } from 'firebase/firestore';
 import { toasterCustom } from '../../components/toaster/toaster';
+import { Alert } from '../../lang/thai';
 
 type props = {
     dispatch: Function
@@ -32,15 +33,26 @@ function Planner({ dispatch }: props) {
 
     useEffect(() => {
         if (user) {
-            fetchInputList();
+            fetchInputList(user.uid)
+                .then(() => {})
+                .catch(() => toasterCustom.danger(Alert.HTTP_ERROR));
         } else {
             setProfiles(defaultProfileList, 0)
         }
     }, [user])
 
-    const fetchInputList = () => {
-        // TODO: fetch data from db
-        setProfileList(inputPlannerList);
+    const fetchInputList = async (uid: string): Promise<void> => {
+        try {
+            const db = getFirestore();
+            const docSnap = await getDoc(doc(db, 'planner-input', uid));
+            const data = docSnap.data();
+            if (data) {
+                setProfileList(data.data as PlannerRequest[]);
+            }
+            return new Promise(resolve => resolve());
+        } catch (err) {
+            return new Promise((_, reject) => reject());
+        }
     }
 
     const setProfiles = (profiles: PlannerRequest[], tab: number): void => {

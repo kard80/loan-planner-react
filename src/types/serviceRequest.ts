@@ -33,3 +33,7 @@ export type MonthDetail = {
     principleDistract: string,
     remainingLoanAmount: string
 }
+
+export type PlannerRequestInput = {
+    data: PlannerRequest[]
+}

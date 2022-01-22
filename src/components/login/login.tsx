@@ -45,7 +45,7 @@ export default function Login({isShown, setIsShown}: property) {
                     </Pane>
                     <Pane display='flex' flexDirection='column'>
                         <Text size={300}>Password</Text>
-                        <TextInput onChange={(e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)} />
+                        <TextInput type='password' onChange={(e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)} />
                     </Pane>
                 </Pane>
             </Pane>
