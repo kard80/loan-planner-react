@@ -37,10 +37,11 @@ export default function Navbar() {
             <Link to='/'>
                 <Heading className='navbar-header' onClick={() => {<Link to='/' />}}>Loan Planner</Heading>
             </Link>
-            {!!user
+            {/* TODO: Login + register feature */}
+            {/* {!!user
                 ? <Button onClick={onLogout}>Logout</Button>
                 : <Button onClick={() => setIsShown(true)}>Login</Button>}
-            <Login isShown={isShown} setIsShown={setIsShown} />
+            <Login isShown={isShown} setIsShown={setIsShown} /> */}
         </nav>
     )
 }

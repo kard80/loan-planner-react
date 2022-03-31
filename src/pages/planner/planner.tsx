@@ -1,6 +1,6 @@
 import { AddIcon, Button, DeleteIcon, Dialog, EditIcon, Pane, Tab, Table, Tablist, Text, TextInput, TextInputField } from 'evergreen-ui';
 import { useState, ChangeEvent, useEffect } from 'react';
-import { FetchData } from '../../services/http';
+import { FetchData, HTTPMethod } from '../../services/http';
 import { PlannerRequest, PlannerResponse, MonthDetail } from '../../types/serviceRequest';
 import { CSVLink } from 'react-csv';
 import { useAuthState } from 'react-firebase-hooks/auth';
@@ -17,12 +17,13 @@ type props = {
     dispatch: Function
 }
 
-const defaultProfileList: PlannerRequest[] = [{loanAmount: '', interestRate: '', installment: '', label: 'Pane 1'}];
+const defaultProfileList: PlannerRequest[] = [{loanAmount: '', interestRate: '', installment: '', label: 'New Pane'}];
 const profileLimit = 3;
 
 function Planner({ dispatch }: props) {
     const [isShowDialog, setIsShowDialog] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
+    const [hasChanged, setHaschanged] = useState(false);
     const [newLabel, setNewLabel] = useState('');
     const [profileList, setProfileList] = useState<PlannerRequest[]>(defaultProfileList);
     const [output, setOutput] = useState<PlannerResponse>({ months: [] as MonthDetail[] });
@@ -72,11 +73,10 @@ function Planner({ dispatch }: props) {
     const onConfirmChangeLabel = (close: () => void) => {
         const profiles = [...profileList];
         profiles[selectedTab].label = newLabel;
-        setNewLabel('');
         setProfileList(profiles);
+        setNewLabel('');
 
-        // TODO: Fetch http
-        toasterCustom.success('Rename success');
+        PostProfileList()
         close();
     }
 
@@ -89,6 +89,10 @@ function Planner({ dispatch }: props) {
         close();
     }
 
+    const onSave = () => {
+        PostProfileList().then(() => setHaschanged(false));
+    }
+
     const onInputChange = (key: keyof PlannerRequest, value: string) => {
         const profiles = profileList.map((item, index) => {
             if (index === selectedTab) {
@@ -97,6 +101,21 @@ function Planner({ dispatch }: props) {
             return item;
         })
         setProfileList(profiles);
+        setHaschanged(true);
+    }
+
+    const PostProfileList = async () => {
+        if (!user?.uid) {
+            toasterCustom.danger(Alert.HTTP_ERROR);
+            return;
+        }
+        try {
+            const method = HTTPMethod.POST;
+            const body: BodyInit = JSON.stringify({data: profileList, uid: user?.uid});
+            await FetchData('/addPlannerInput', {method, body});
+        } catch(err) {
+            console.error(err);
+        }
     }
 
     const onSubmit = async () => {
@@ -169,6 +188,7 @@ function Planner({ dispatch }: props) {
                 </Pane>
                 <Pane display='flex' justifyContent='end' alignItems='center' padding='10px'>
                     <Button appearance='primary' maxHeight='40px' onClick={onSubmit} >คำนวณ</Button>
+                    <Button display={user ? 'block': 'none'} disabled={!hasChanged} marginLeft='10px' onClick={onSave}>บันทึก</Button>
                 </Pane>
             </Pane>
             <Pane className='output-part' display={output.months.length ? 'block' : 'none'}>

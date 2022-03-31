@@ -8,6 +8,7 @@ import Navbar from './components/navbar/navbar';
 import Loading from './components/loading/loading'
 
 import store from './redux/store';
+import Register from './components/register/register';
 
 // import './App.css';
 
@@ -21,6 +22,7 @@ function App() {
             <Route path='/' element={<Home />} />
             <Route path='/detail/:id' element={<Detail />} />
             <Route path='/planner' element={<Planner />}></Route>
+            <Route path='/register' element={<Register />}></Route>
           </Routes>
       </BrowserRouter>
   </Provider>

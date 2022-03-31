@@ -1,0 +1,24 @@
+@import '../../themes/light.less';
+
+.register-container {
+    width: 80%;
+    height: 80vh;
+    background-color: @secondary-background-color;
+    padding-top: 20px;
+    margin: 20px auto auto auto;
+
+    .input-pane {
+        max-width: 280px;
+        width: 100%;
+        margin: 20px auto auto auto;
+
+        // flex properties
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        .input-label {
+            align-self: flex-start;
+        }
+    }
+}
