@@ -1,7 +1,7 @@
 import { AddIcon, Button, DeleteIcon, Dialog, EditIcon, Pane, Tab, Table, Tablist, Text, TextInput, TextInputField } from 'evergreen-ui';
 import { useState, ChangeEvent, useEffect } from 'react';
 import { FetchData, HTTPMethod } from '../../services/http';
-import { PlannerRequest, PlannerResponse, MonthDetail } from '../../types/serviceRequest';
+import { PlannerResponse, MonthDetail, ServiceRequest, ParameterInput, ParameterType } from '../../types/serviceRequest';
 import { CSVLink } from 'react-csv';
 import { useAuthState } from 'react-firebase-hooks/auth';
 
@@ -12,35 +12,56 @@ import { auth } from '../../services/firebase';
 import { getFirestore, getDoc, doc } from 'firebase/firestore';
 import { toasterCustom } from '../../components/toaster/toaster';
 import { Alert } from '../../lang/thai';
+import NumberInput from '../../components/input/input';
+import { useNavigate, useParams } from 'react-router-dom';
+import { getJSONFromStorage } from '../../helpers/session-storage'
 
 type props = {
     dispatch: Function
 }
 
-const defaultProfileList: PlannerRequest[] = [{loanAmount: '', interestRate: '', installment: '', label: 'New Pane'}];
+type profileList = {
+    parameterInput: ParameterInput[],
+    label: string
+}
+
 const profileLimit = 3;
 
 function Planner({ dispatch }: props) {
+    let { id } = useParams();
+    const navigate = useNavigate();
+    const [user] = useAuthState(auth);
+    const [template, setTemplate] = useState<ServiceRequest>();
     const [isShowDialog, setIsShowDialog] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
     const [hasChanged, setHaschanged] = useState(false);
     const [newLabel, setNewLabel] = useState('');
-    const [profileList, setProfileList] = useState<PlannerRequest[]>(defaultProfileList);
+    const [profileList, setProfileList] = useState<profileList[]>([]);
     const [output, setOutput] = useState<PlannerResponse>({ months: [] as MonthDetail[] });
     const [selectedTab, setSelectedTab] = useState(0);
     const [selectedDisplay, setSelectedDisplay] = useState(0);
-    const [user] = useAuthState(auth);
     
+    useEffect(() => {
+        const payload = getJSONFromStorage(id as string);
+        if (!Object.keys(payload).length) {
+            navigate('/');
+            return;
+        }
+        const profileListKeys: {[key: string]: string} = {};
+        payload.input.forEach(item => {
+            profileListKeys[item.key] = '';
+        });
+        setProfileList([...profileList, {parameterInput: payload.input, label: ''}]);
+        setTemplate(payload);
+    }, [id, navigate])
 
     useEffect(() => {
         if (user) {
             fetchInputList(user.uid)
                 .then(() => {})
                 .catch(() => toasterCustom.danger(Alert.HTTP_ERROR));
-        } else {
-            setProfiles(defaultProfileList, 0)
         }
-    }, [user])
+    }, [user]);
 
     const fetchInputList = async (uid: string): Promise<void> => {
         try {
@@ -48,7 +69,7 @@ function Planner({ dispatch }: props) {
             const docSnap = await getDoc(doc(db, 'planner-input', uid));
             const data = docSnap.data();
             if (data) {
-                setProfileList(data.data as PlannerRequest[]);
+                setProfileList(data.data);
             }
             return new Promise(resolve => resolve());
         } catch (err) {
@@ -56,13 +77,13 @@ function Planner({ dispatch }: props) {
         }
     }
 
-    const setProfiles = (profiles: PlannerRequest[], tab: number): void => {
+    const setProfiles = (profiles: profileList[], tab: number): void => {
         setSelectedTab(tab);
         setProfileList(profiles);
     }
 
     const onAddClicked = () => {
-        const arr : PlannerRequest[] = [...profileList,  { ...defaultProfileList[0], label: `New Pane`}];
+        const arr: profileList[] = [...profileList,  { parameterInput: template!.input, label: `New Pane`}];
         setProfiles(arr, arr.length - 1);
     }
 
@@ -93,11 +114,12 @@ function Planner({ dispatch }: props) {
         PostProfileList().then(() => setHaschanged(false));
     }
 
-    const onInputChange = (key: keyof PlannerRequest, value: string) => {
-        const profiles = profileList.map((item, index) => {
-            if (index === selectedTab) {
-                item[key] = value;
-            }
+    const onInputChange = (key: string, value: string) => {
+        const profiles = [...profileList];
+        profiles[selectedTab].parameterInput = profiles[selectedTab].parameterInput.map(item => {
+            if (item.key === key) {
+                item.value = value;
+            };
             return item;
         })
         setProfileList(profiles);
@@ -121,8 +143,17 @@ function Planner({ dispatch }: props) {
     const onSubmit = async () => {
         showSpinner(true);
         try {
-            const fetch = await FetchData(`/plannerCalculation?loanAmount=${profileList[selectedTab].loanAmount}&interestRate=${profileList[selectedTab].interestRate}&installment=${profileList[selectedTab].installment}`);
+            let param = ''; 
+            profileList[selectedTab].parameterInput.forEach(item => {
+                if (item.value !== undefined) {
+                    param += `${item.key}=${item.value}&`
+                }
+            });
+            param = param.slice(0, -1);
+            const fetch = await FetchData(`/plannerCalculation?${param}`);
             setOutput({ months: fetch.months as MonthDetail[] });
+        } catch(err) {
+            console.error(err);
         } finally {
             showSpinner(false);
         }
@@ -156,7 +187,7 @@ function Planner({ dispatch }: props) {
                         onConfirm={(close: () => void) => onConfirmChangeLabel(close)}
                         onCloseComplete={() => setIsEditMode(false)}>
                             <Text>คุณต้องการเปลี่ยนชื่อจาก</Text>
-                            <Text size={500} fontWeight='bold'> {profileList[selectedTab].label} </Text>
+                            <Text size={500} fontWeight='bold'> {profileList[selectedTab]?.label} </Text>
                             <Text>เป็น</Text>
                             <TextInput display='block' marginTop='10px' width='50%' value={newLabel} onChange={(e: ChangeEvent<HTMLInputElement>) => setNewLabel(e.target.value)} />
                     </Dialog>
@@ -172,19 +203,26 @@ function Planner({ dispatch }: props) {
                         onConfirm={(close: () => void) => onConfirmDeleteProfile(close)}
                         onCloseComplete={() => setIsShowDialog(false)}>
                             <Text>คุณต้องการลบ</Text>
-                            {profileList[selectedTab].label
+                            {profileList[selectedTab]?.label
                                 ? <Text size={500} fontWeight='bold'> {profileList[selectedTab].label} </Text>
                                 : <Text>ข้อมูล</Text>}
                             <Text>หรือไม่?</Text>
                     </Dialog>
                 </Pane>
                 <Pane className='planner-part'>
-                    <TextInputField label='วงเงินกู้' type='number' step={100000} min='0' required value={profileList[selectedTab].loanAmount} onChange={(e: ChangeEvent<HTMLInputElement>) => onInputChange('loanAmount', e.target.value)} />
-                    {/* <TextInputField label='ระยะเวลาผ่อนชำระ(ปี)' type='number' min='1' required /> */}
-                    <TextInputField label='อัตราดอกเบี้ยสามปีแรก' type='number' min='0' required value={profileList[selectedTab].interestRate} onChange={(e: ChangeEvent<HTMLInputElement>) => onInputChange('interestRate', e.target.value)} />
-                    <TextInputField label='ผ่อนชำระงวดละ(บาท)' type='number' min='0' step={1000} required value={profileList[selectedTab].installment} onChange={(e: ChangeEvent<HTMLInputElement>) => onInputChange('installment', e.target.value)} />
-                    {/* <TextInputField label='วันที่ชำระงวดแรก' type='date' /> */}
-                    {/* <TextInputField label='อัตราดอกเบี้ยสามปีหลัง' type='number' min='0' /> */}
+                    {profileList[selectedTab]?.parameterInput.map((item: ParameterInput) => {
+                        if (item.type === ParameterType.Number) {
+                            return(
+                                <NumberInput key={item.key} item={item} value={String(item.value)} onInputChange={(e: ChangeEvent<HTMLInputElement>) => onInputChange(item.key, e.target.value)} />
+                            )
+                        }
+                            {/* <TextInputField label='ระยะเวลาผ่อนชำระ(ปี)' type='number' min='1' required /> */}
+                            {/* <TextInputField label='วันที่ชำระงวดแรก' type='date' /> */}
+                            {/* <TextInputField label='อัตราดอกเบี้ยสามปีหลัง' type='number' min='0' /> */}
+                        return (
+                            <div></div>
+                        )
+                    })}
                 </Pane>
                 <Pane display='flex' justifyContent='end' alignItems='center' padding='10px'>
                     <Button appearance='primary' maxHeight='40px' onClick={onSubmit} >คำนวณ</Button>

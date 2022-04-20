@@ -1,14 +1,14 @@
-import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useEffect, useState, ChangeEvent } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Button, Card, Heading, Pane, Text, TextInput } from 'evergreen-ui';
 
-import { FindService } from '../../mocks/home';
 import { FetchData } from '../../services/http';
-import { ServicePayload, ServiceRequest } from '../../types/serviceRequest';
+import { ParameterInput, ServiceRequest } from '../../types/serviceRequest';
 
 import './detail.less';
 import { connect, RootStateOrAny } from 'react-redux';
 import { spinnerAction } from '../../redux/action';
+import { getJSONFromStorage } from '../../helpers/session-storage';
 
 type props = {
     dispatch: Function
@@ -16,17 +16,20 @@ type props = {
 
 function Detail({ dispatch }: props) {
     let { id } = useParams();
-    const [payload, setPayload] = useState<ServicePayload[]>([]);
+    const navigate = useNavigate();
+    const [payload, setPayload] = useState<ParameterInput[]>([]);
     const [couldSend, setCouldSend] = useState<boolean>(false);
-    const [data, setData] = useState<ServiceRequest>({id: '', label: '', input: [], output: [], options: []});
+    const [data, setData] = useState<ServiceRequest>();
     const [showResult, setShowResult] = useState<boolean>(false);
 
     useEffect(() => {
-        if (id) {
-            const getData = FindService(id);
-            setData(getData);
+        const payload = getJSONFromStorage(id as string);
+        if (!Object.keys(payload).length) {
+            navigate('/');
+            return;
         }
-    }, [id])
+        setData(payload);
+    }, [id, navigate])
 
     const onClickCaculate = async () => {
         let query = '';
@@ -40,7 +43,7 @@ function Detail({ dispatch }: props) {
         try {
             showSpinner(true);
             const res = await FetchData('/maxLoanAmount?' + query);
-            const changedData: ServiceRequest = {...data, output: res };
+            const changedData: ServiceRequest = {...data as ServiceRequest, output: res };
             setData(changedData);
             setShowResult(true);
         } catch (err) {
@@ -54,7 +57,7 @@ function Detail({ dispatch }: props) {
         dispatch(spinnerAction(show));
     }
 
-    const onInputValueChange = (e: React.ChangeEvent<HTMLInputElement>, servicePayload: ServicePayload) => {
+    const onInputValueChange = (e: ChangeEvent<HTMLInputElement>, servicePayload: ParameterInput) => {
         const { key } = servicePayload;
         let isAssignValue = false;
         const checked = payload.map(item => {

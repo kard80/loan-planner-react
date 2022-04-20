@@ -11,7 +11,11 @@ export enum HTTPMethod {
     DELETE = 'DELETE'
 }
 
-export async function FetchData(path: string, options?: RequestInit): Promise<any> {
+interface Options extends RequestInit {
+    disableToaster?: boolean
+}
+
+export async function FetchData(path: string, options?: Options): Promise<any> {
     let domain = '';
     const requestOptions: RequestInit  = {
         headers: { 'Content-Type': 'application/json' },
@@ -29,14 +33,14 @@ export async function FetchData(path: string, options?: RequestInit): Promise<an
     try {
         const res = await fetch(domain + path, requestOptions);
         if (!res.ok) {
-            toasterCustom.danger(Alert.HTTP_ERROR);
+            !options?.disableToaster && toasterCustom.danger(Alert.HTTP_ERROR);
             return Promise.reject('Something went wrong from http');
         }
-        toasterCustom.success(Alert.HTTP_SUCCESS)
+        !options?.disableToaster && toasterCustom.success(Alert.HTTP_SUCCESS)
         return res.json();
     }
     catch(err) {
-        toasterCustom.danger(Alert.HTTP_ERROR);
+        !options?.disableToaster && toasterCustom.danger(Alert.HTTP_ERROR);
         return Promise.reject(err);
     }
 }
