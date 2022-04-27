@@ -12,7 +12,7 @@ import { auth } from '../../services/firebase';
 import { getFirestore, getDoc, doc } from 'firebase/firestore';
 import { toasterCustom } from '../../components/toaster/toaster';
 import { Alert } from '../../lang/thai';
-import NumberInput from '../../components/input/input';
+import { DynamicInput, NumberInput } from '../../components/input/input';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getJSONFromStorage } from '../../helpers/session-storage'
 
@@ -251,13 +251,21 @@ function Planner({ dispatch }: props) {
                             <Table.TextHeaderCell>เงินต้นคงเหลือ</Table.TextHeaderCell>
                         </Table.Head>
                         <Table.Body>
-                                {output.months.map(item => {
+                                {output.months.map((item, index) => {
+                                    const onChange = (input: string) => {
+                                        const result = [...output.months];
+                                        item.installment = input;
+                                        result[index] = item;
+                                        setOutput({...output, months: result});
+                                    }
                                     return (
                                         <Table.Row key={item.no}>
                                             <Table.TextCell>{item.no}</Table.TextCell>
                                             <Table.TextCell>{item.carryLoanAmount}</Table.TextCell>
                                             <Table.TextCell>{item.interestRate}</Table.TextCell>
-                                            <Table.TextCell>{item.installment}</Table.TextCell>
+                                            <Table.TextCell>
+                                                <DynamicInput returnValue={onChange} value={item.installment} />
+                                            </Table.TextCell>
                                             <Table.TextCell>{item.interestAmount}</Table.TextCell>
                                             <Table.TextCell>{item.principleDistract}</Table.TextCell>
                                             <Table.TextCell>{item.remainingLoanAmount}</Table.TextCell>
