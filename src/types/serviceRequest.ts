@@ -45,3 +45,10 @@ export type MonthDetail = {
     principleDistract: string,
     remainingLoanAmount: string
 }
+
+export type ChartDetail = {
+    no: string,
+    interest: number,
+    principle: number,
+    remainingLoan: number
+}

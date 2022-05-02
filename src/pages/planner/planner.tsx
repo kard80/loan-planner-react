@@ -1,9 +1,10 @@
 import { AddIcon, Button, DeleteIcon, Dialog, EditIcon, Pane, Tab, Table, Tablist, Text, TextInput, TextInputField } from 'evergreen-ui';
 import { useState, ChangeEvent, useEffect } from 'react';
 import { FetchData, HTTPMethod } from '../../services/http';
-import { PlannerResponse, MonthDetail, ServiceRequest, ParameterInput, ParameterType } from '../../types/serviceRequest';
+import { PlannerResponse, MonthDetail, ServiceRequest, ParameterInput, ParameterType, ChartDetail } from '../../types/serviceRequest';
 import { CSVLink } from 'react-csv';
 import { useAuthState } from 'react-firebase-hooks/auth';
+import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 import './planner.less';
 import { connect, RootStateOrAny } from 'react-redux';
@@ -15,6 +16,7 @@ import { Alert } from '../../lang/thai';
 import { DynamicInput, NumberInput } from '../../components/input/input';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getJSONFromStorage } from '../../helpers/session-storage'
+import { numberFormat } from '../../helpers/converter';
 
 type props = {
     dispatch: Function
@@ -40,6 +42,7 @@ function Planner({ dispatch }: props) {
     const [output, setOutput] = useState<PlannerResponse>({ months: [] as MonthDetail[] });
     const [selectedTab, setSelectedTab] = useState(0);
     const [selectedDisplay, setSelectedDisplay] = useState(0);
+    const [outputChart, setOutputChart] = useState<ChartDetail[]>();
     
     useEffect(() => {
         const payload = getJSONFromStorage(id as string);
@@ -152,6 +155,17 @@ function Planner({ dispatch }: props) {
             param = param.slice(0, -1);
             const fetch = await FetchData(`/plannerCalculation?${param}`);
             setOutput({ months: fetch.months as MonthDetail[] });
+
+            // modified fetch.months for drawing chart
+            const chart: ChartDetail[] = [...fetch.months].map((item: MonthDetail) => {
+                return {
+                    no: item.no,
+                    interest: Number(numberFormat(item.interestAmount)),
+                    principle: Number(numberFormat(item.principleDistract)),
+                    remainingLoan: Number(numberFormat(item.remainingLoanAmount)),
+                };
+            })
+            setOutputChart(chart);
         } catch(err) {
             console.error(err);
         } finally {
@@ -233,7 +247,7 @@ function Planner({ dispatch }: props) {
                 <Pane marginBottom='20px' display='flex' flexDirection='row' justifyContent='space-between'>
                     <Tablist>
                         <Tab key={1} onSelect={() => setSelectedDisplay(0)} isSelected={selectedDisplay === 0}>ตาราง</Tab>
-                        <Tab key={2} onSelect={() => setSelectedDisplay(1)} isSelected={selectedDisplay === 1} disabled={true}>กราฟ</Tab>
+                        <Tab key={2} onSelect={() => setSelectedDisplay(1)} isSelected={selectedDisplay === 1}>กราฟ</Tab>
                     </Tablist>
                     <Button>
                         <CSVLink data={output.months}  className='csv-text'>Download CSV</CSVLink>
@@ -274,6 +288,18 @@ function Planner({ dispatch }: props) {
                                 })}
                         </Table.Body>
                     </Table>
+                </Pane>
+                <Pane display={selectedDisplay === 1 ? 'block': 'none'}>
+                    <ResponsiveContainer width='100%' height={250}>
+                        <LineChart data={outputChart}>
+                            <CartesianGrid strokeDasharray='3 3' />
+                            <XAxis dataKey='no' />
+                            <YAxis />
+                            <Tooltip />
+                            <Line stroke='#82ca9d' dataKey='principle' />
+                            <Line dataKey='interest' />
+                        </LineChart>
+                    </ResponsiveContainer>
                 </Pane>
             </Pane>
         </Pane>
