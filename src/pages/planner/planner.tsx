@@ -66,6 +66,10 @@ function Planner({ dispatch }: props) {
         }
     }, [user]);
 
+    useEffect(() => {
+        console.log(profileList);
+    }, [profileList])
+
     const fetchInputList = async (uid: string): Promise<void> => {
         try {
             const db = getFirestore();
